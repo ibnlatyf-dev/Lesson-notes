@@ -1,6 +1,6 @@
 {
-  "generated": "2026-11-14T20:17:24.726Z",
-  "count": 2,
+  "generated": "2026-11-14T20:39:52.904Z",
+  "count": 3,
   "files": [
     {
       "path": "files/Sample - Lesson 1 (delete me) [Summary].pdf",
@@ -8,6 +8,13 @@
       "size": 735,
       "type": "pdf",
       "date": "2026-11-14T20:16:44.000Z"
+    },
+    {
+      "path": "files/علوم_القرآن_الملخص_المختصر_RTL_tables.pdf",
+      "name": "علوم_القرآن_الملخص_المختصر_RTL_tables.pdf",
+      "size": 390235,
+      "type": "pdf",
+      "date": "2026-11-14T20:39:42.000Z"
     },
     {
       "path": "files/عينة - الدرس 1 (ملف تجريبي احذفه).pdf",
