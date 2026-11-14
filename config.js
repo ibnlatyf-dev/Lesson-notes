@@ -29,8 +29,8 @@ export const CONFIG = {
    *           (or a full https://wa.me/... link)
    * instagram: your handle without the @                                    */
   contact: {
-    whatsapp: '',
-    instagram: '',
+    whatsapp: '9609755224',
+    instagram: 's8_awx',
   },
 
   /* ---- Credits tile (F25). Optional links: [{ label: 'My page', url: 'https://…' }] */
@@ -41,7 +41,7 @@ export const CONFIG = {
   /* ---- Exam countdown (F9). Empty = hidden.
    * Format: 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM' (your local time). */
   exam: {
-    date: '',
+    date: '2026-11-29',
     name: { ar: '', en: '' }, // optional label, e.g. { ar: 'اختبار التوحيد', en: 'Tawheed exam' }
   },
 
