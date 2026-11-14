@@ -1,0 +1,12 @@
+{
+  "_note": "SAMPLE FILE. One entry per file: the exact file name, then a short description in Arabic and English. Delete the sample entries and add your own. Keys starting with _ are ignored.",
+
+  "Sample - Lesson 1 (delete me) [Summary].pdf": {
+    "ar": "وصف تجريبي: هذا ملف عيّنة فقط، احذفه بعد التجربة.",
+    "en": "Sample description: this is only a sample file. Delete it after testing."
+  },
+  "عينة - الدرس 1 (ملف تجريبي احذفه).pdf": {
+    "ar": "وصف تجريبي: هذا ملف عيّنة فقط، احذفه بعد التجربة.",
+    "en": "Sample description: this is only a sample file. Delete it after testing."
+  }
+}

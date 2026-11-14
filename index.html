@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Nothing may load from anywhere except this site (and GitHub's API as a backup file list). -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://api.github.com; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Lesson Notes Hub · مركز دروسي</title>
+  <meta name="description" content="مركز دروسي: ملخصات ومذكرات الدروس في مكان واحد — تصفّح، ابحث، عاين وحمّل. Lesson Notes Hub: all our class notes in one place — browse, search, preview and download.">
+  <meta name="theme-color" content="#0B132B">
+  <meta name="color-scheme" content="dark light">
+
+  <!-- Link previews (WhatsApp, etc.). After publishing you can make og:image a full https:// address (see README). -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Lesson Notes Hub · مركز دروسي">
+  <meta property="og:title" content="مركز دروسي · Lesson Notes Hub">
+  <meta property="og:description" content="ملخصات ومذكرات الدروس في مكان واحد. All our class notes in one place: browse, search, preview and download.">
+  <meta property="og:image" content="icons/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="ar_SA">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="مركز دروسي · Lesson Notes Hub">
+  <meta name="twitter:description" content="ملخصات ومذكرات الدروس في مكان واحد. All our class notes in one place.">
+  <meta name="twitter:image" content="icons/social-preview.png">
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="مركز دروسي">
+
+  <link rel="stylesheet" href="style.css">
+  <script src="boot.js"></script>
+  <script type="module" src="script.js"></script>
+</head>
+<body>
+  <div id="bg-fallback" aria-hidden="true"></div>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+  <div id="bg-dots" aria-hidden="true"></div>
+
+  <a class="skip-link" href="#main" data-i18n="a11y.skip">Skip to the files</a>
+
+  <header class="nav-wrap">
+    <nav class="island glass" data-i18n-attr="aria-label:nav.label" aria-label="Site controls">
+      <a class="brand" href="./" data-i18n-attr="aria-label:site.title" aria-label="Lesson Notes Hub">
+        <span class="brand-mark" aria-hidden="true">م</span>
+        <span class="brand-name" data-i18n="site.title">Lesson Notes Hub</span>
+      </a>
+      <div class="nav-actions">
+        <button type="button" id="btn-search" class="icon-btn" data-icon="magnifying-glass" data-i18n-attr="aria-label:nav.search;title:nav.search" aria-label="Search"></button>
+        <button type="button" id="btn-lang" class="icon-btn pill-btn" data-icon="translate" data-i18n-attr="aria-label:nav.lang;title:nav.lang" aria-label="Switch language"><span class="lang-label">ع</span></button>
+        <div class="nav-secondary" id="nav-secondary">
+          <button type="button" id="btn-theme" class="icon-btn" aria-label="Theme"><span class="ic-slot"></span><span class="btn-label"></span></button>
+          <div class="text-size" id="text-size" role="group" data-i18n-attr="aria-label:nav.textSize" aria-label="Text size" hidden>
+            <button type="button" id="btn-text-minus" class="icon-btn" data-i18n-attr="aria-label:nav.textSmaller;title:nav.textSmaller" aria-label="Smaller text"><span aria-hidden="true" class="a-minus">A−</span></button>
+            <button type="button" id="btn-text-plus" class="icon-btn" data-i18n-attr="aria-label:nav.textLarger;title:nav.textLarger" aria-label="Larger text"><span aria-hidden="true" class="a-plus">A+</span></button>
+          </div>
+          <button type="button" id="btn-reading" class="icon-btn" data-icon="eyeglasses" aria-pressed="false" aria-label="Reading mode" hidden><span class="btn-label"></span></button>
+        </div>
+        <a id="btn-help" class="icon-btn help-btn" href="owner-guide.html#naming" data-help data-i18n-attr="aria-label:nav.help;title:nav.help" aria-label="Help"><span aria-hidden="true" class="qmark">?</span></a>
+        <button type="button" id="btn-settings" class="icon-btn" data-icon="gear-six" aria-expanded="false" aria-controls="nav-secondary" data-i18n-attr="aria-label:nav.settings;title:nav.settings" aria-label="Settings"></button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <div id="notices" class="notices"></div>
+    <div id="grid" class="bento" aria-busy="true">
+      <!-- shimmer placeholders while the file list loads -->
+      <div class="tile glass skeleton sk-hero" aria-hidden="true"><span></span><span></span></div>
+      <div class="tile glass skeleton" aria-hidden="true"><span></span><span></span></div>
+      <div class="tile glass skeleton sk-wide" aria-hidden="true"><span></span></div>
+      <div class="tile glass skeleton sk-tall" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="tile glass skeleton sk-tall" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="tile glass skeleton sk-tall" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+    <noscript>
+      <p class="noscript glass">هذا الموقع يحتاج إلى تفعيل JavaScript لعرض الملفات. · This site needs JavaScript to list the files.</p>
+    </noscript>
+    <div id="fatal" class="noscript glass" hidden>
+      <p>تعذّر تشغيل الصفحة على هذا المتصفح. جرّب تحديث الصفحة أو فتحها في متصفح أحدث.</p>
+      <p>The page could not start in this browser. Try refreshing, or open it in a newer browser.</p>
+    </div>
+  </main>
+
+  <footer class="footer glass">
+    <p id="privacy-line" class="privacy" hidden><span class="privacy-ic" data-icon="shield-check"></span><span data-i18n="footer.privacy">No tracking, no ads, no accounts, nothing collected by this site.</span></p>
+    <p class="footer-links">
+      <a class="link" href="owner-guide.html#naming" data-help data-i18n="footer.help">Help</a>
+      <span id="owner-links" hidden>
+        <a class="link" id="link-add-files" href="owner-guide.html" target="_blank" rel="noopener noreferrer" hidden data-i18n="footer.addFiles">Add files</a>
+        <a class="link" id="link-owner-guide" href="owner-guide.html" data-i18n="footer.ownerGuide">Owner guide</a>
+      </span>
+    </p>
+  </footer>
+
+  <div class="fab-stack">
+    <button type="button" id="btn-top" class="fab glass" data-icon="arrow-up" data-i18n-attr="aria-label:nav.top;title:nav.top" aria-label="Back to top" hidden></button>
+    <a id="fab-help" class="fab glass fab-help" href="owner-guide.html#naming" data-help data-i18n-attr="aria-label:nav.help;title:nav.help" aria-label="Help"><span aria-hidden="true" class="qmark">?</span></a>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite" role="status"></div>
+</body>
+</html>

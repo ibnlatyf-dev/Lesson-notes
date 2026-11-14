@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Self-test · Lesson Notes Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { display: block; padding: 20px; }
+    .wrap { max-width: 900px; margin: 0 auto; display: grid; gap: 16px; }
+    .card { padding: 20px; display: grid; gap: 8px; }
+    .t { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--row-border); }
+    .t b { flex: none; width: 3.2em; font-family: var(--font-head); }
+    .pass b { color: #2ED573; } .fail b { color: #FF4D4F; }
+    .fail { font-weight: 700; }
+    .t small { color: var(--muted); overflow-wrap: anywhere; }
+    #summary { font-family: var(--font-head); font-size: 1.3rem; font-weight: 700; }
+    iframe { width: 100%; height: 420px; border: 1px solid var(--chip-border); border-radius: 16px; background: #0B132B; }
+  </style>
+  <script src="boot.js"></script>
+</head>
+<body>
+  <div id="bg-fallback" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="card glass">
+      <h1>Self-test</h1>
+      <p id="summary" role="status">Running…</p>
+      <p><small>Checks the file-name parser, the file-list loader and its fallbacks, the safe storage helper, the Quick Guide, the background and every feature module. Open this page from the published site or a local server (not by double-clicking the file).</small></p>
+      <p><a class="link" href="./">Back to the site</a></p>
+    </div>
+    <div class="card glass" id="results"></div>
+    <div class="card glass">
+      <h2>Live page used by the tests</h2>
+      <iframe id="frame" title="Site under test"></iframe>
+    </div>
+  </div>
+
+  <script type="module">
+    import { parseFileName, normalizeText, kindOfExt, isExamSubject } from './modules/parser.js';
+    import { loadFileList, validateIndex, resolveRepo } from './modules/loader.js';
+    import { store, makeStoreFor, memoryStore } from './modules/storage.js';
+    import { encodePath, fileUrl, whatsappLink, safeHttpUrl } from './modules/util.js';
+    import { parseExamDate } from './modules/countdown.js';
+    import { iconForSubject } from './modules/subject-icons.js';
+    import { translations } from './translations.js';
+
+    window.__lnhStarted = true;
+    const results = document.getElementById('results');
+    let passed = 0, failed = 0;
+    let section = null;
+    function group(name) { section = document.createElement('h2'); section.textContent = name; results.append(section); }
+    function report(ok, name, detail) {
+      if (ok) passed += 1; else failed += 1;
+      const row = document.createElement('div');
+      row.className = 't ' + (ok ? 'pass' : 'fail');
+      const b = document.createElement('b'); b.textContent = ok ? 'PASS' : 'FAIL';
+      const s = document.createElement('span'); s.textContent = name;
+      row.append(b, s);
+      if (detail) { const d = document.createElement('small'); d.textContent = detail; row.append(d); }
+      results.append(row);
+    }
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+    function eq(name, got, want) { report(same(got, want), name, same(got, want) ? '' : 'got ' + JSON.stringify(got) + ' — wanted ' + JSON.stringify(want)); }
+    function ok(name, cond, detail) { report(!!cond, name, cond ? '' : detail || ''); }
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    async function until(fn, ms = 8000) { const end = Date.now() + ms; while (Date.now() < end) { try { const v = fn(); if (v) return v; } catch {} await wait(60); } return null; }
+
+    /* ------------------------------------------------ 1. file-name parser */
+    group('File-name parser');
+    const p = (n) => { const r = parseFileName(n); return [r.subject, r.title, r.lesson, r.tags, r.ext, r.kind]; };
+    eq('English: subject, lesson, tag', p('Tawheed - Lesson 3 [Summary].pdf'), ['Tawheed', 'Lesson 3', 3, ['summary'], 'pdf', 'pdf']);
+    eq('Arabic: subject, lesson, two tags', p('الفقه - الدرس 5 [ملخص] [طباعة].pdf'), ['الفقه', 'الدرس 5', 5, ['summary', 'print'], 'pdf', 'pdf']);
+    eq('No prefix -> subject "" (Other)', p('Random notes.docx'), ['', 'Random notes', null, [], 'docx', 'word']);
+    eq('Tags are case-insensitive', p('Fiqh - Lesson 1 [FULL] [exam].pptx'), ['Fiqh', 'Lesson 1', 1, ['full', 'exam'], 'pptx', 'slides']);
+    eq('Arabic tags [كامل] [محدث] [اختبار]', p('حديث - الدرس 2 [كامل] [محدث] [اختبار].pdf'), ['حديث', 'الدرس 2', 2, ['full', 'updated', 'exam'], 'pdf', 'pdf']);
+    eq('Unknown tag stays in the title', p('Tafsir - Lesson 4 [Draft].pdf'), ['Tafsir', 'Lesson 4 [Draft]', 4, [], 'pdf', 'pdf']);
+    eq('Unknown tag before a known one stays', p('Tafsir - Lesson 4 [Draft] [Print].pdf'), ['Tafsir', 'Lesson 4 [Draft]', 4, ['print'], 'pdf', 'pdf']);
+    eq('Only the FIRST " - " splits', p('Law - Part 2 - Courts.pdf'), ['Law', 'Part 2 - Courts', 2, [], 'pdf', 'pdf']);
+    eq('Hyphen without spaces does not split', p('Self-study notes 7.pdf'), ['', 'Self-study notes 7', 7, [], 'pdf', 'pdf']);
+    eq('Arabic-Indic digits give the lesson number', p('السيرة - الدرس ١٢.pdf'), ['السيرة', 'الدرس ١٢', 12, [], 'pdf', 'pdf']);
+    eq('Odd characters survive', p('Test - Weird #1 100% (a+b) & more [Print].pdf'), ['Test', 'Weird #1 100% (a+b) & more', 1, ['print'], 'pdf', 'pdf']);
+    eq('First number wins', p('Hadith - Lesson 10 part 2.mp3'), ['Hadith', 'Lesson 10 part 2', 10, [], 'mp3', 'audio']);
+    eq('Image type', p('Notes - Board photo.JPG')[5], 'image');
+    eq('No extension', p('Tawheed - Lesson 9'), ['Tawheed', 'Lesson 9', 9, [], '', 'other']);
+    eq('Dots inside the name', p('Fiqh - v1.2 Lesson 3.final.pdf').slice(0, 2).concat(p('Fiqh - v1.2 Lesson 3.final.pdf')[4]), ['Fiqh', 'v1.2 Lesson 3.final', 'pdf']);
+    eq('Very long names do not break', parseFileName('S - ' + 'x'.repeat(400) + ' 3 [Full].pdf').tags, ['full']);
+    eq('Empty name', p(''), ['', '', null, [], '', 'other']);
+    eq('Tag with spaces inside brackets', parseFileName('A - B [ Summary ].pdf').tags, ['summary']);
+    eq('Duplicate tags listed once', parseFileName('A - B [Print] [طباعة].pdf').tags, ['print']);
+    eq('kindOfExt', [kindOfExt('PPTX'), kindOfExt('m4a'), kindOfExt('zip')], ['slides', 'audio', 'other']);
+    ok('Exam subject names', isExamSubject('Exam') && isExamSubject('اختبارات') && isExamSubject('نماذج اختبار') && !isExamSubject('Fiqh'));
+    eq('Search text: alef/ta-marbuta/diacritics unified', normalizeText('الفِقْهُ  أُصُول ة'), normalizeText('الفقه اصول ه'));
+    eq('Subject icon keywords', [iconForSubject('التوحيد'), iconForSubject('Fiqh 2'), iconForSubject('تفسير القرآن'), iconForSubject('Chemistry'), iconForSubject('')], ['star-and-crescent', 'scales', 'book-bookmark', 'book', 'folder']);
+
+    /* ------------------------------------------------ 2. links and safety */
+    group('Links for awkward file names');
+    eq('Every path segment is encoded', encodePath('files/Test - Weird #1 100% (a+b) & more.pdf'), 'files/Test%20-%20Weird%20%231%20100%25%20(a%2Bb)%20%26%20more.pdf');
+    ok('Arabic names are encoded', /^files\/%D8/.test(encodePath('files/عينة.pdf')));
+    ok('fileUrl adds a version from the date', /\?v=\w+$/.test(fileUrl({ path: 'files/a.pdf', date: '2026-01-01T00:00:00Z' })));
+    eq('WhatsApp link from a number', whatsappLink('+966 50 000 0000', 'hi'), 'https://wa.me/966500000000?text=hi');
+    eq('Empty contact -> no link', whatsappLink('', 'hi'), '');
+    eq('Only http(s) links are accepted', safeHttpUrl('javascript:alert(1)'), '');
+    ok('Exam date parsing', parseExamDate('2031-05-20') instanceof Date && parseExamDate('nonsense') === null && parseExamDate('2031-02-31') === null && parseExamDate('') === null);
+    {
+      const en = Object.keys(translations.en), ar = Object.keys(translations.ar);
+      const missing = en.filter((k) => !ar.includes(k)).concat(ar.filter((k) => !en.includes(k)));
+      ok('Arabic and English have exactly the same text keys', missing.length === 0, 'different: ' + missing.join(', '));
+    }
+
+    /* ------------------------------------------------ 3. safe storage */
+    group('Safe storage helper');
+    {
+      store.session.set('__t', { a: 1, list: [1, 2] });
+      eq('Round trip (session)', store.session.get('__t', null), { a: 1, list: [1, 2] });
+      store.session.remove('__t');
+      eq('Missing key gives the fallback', store.session.get('__t', 'fallback'), 'fallback');
+      // a storage that throws on every access (private mode / blocked)
+      Object.defineProperty(window, '__blockedStorage', { configurable: true, get() { throw new Error('blocked'); } });
+      let blocked, threw = false;
+      try { blocked = makeStoreFor('__blockedStorage'); blocked.set('x', 5); } catch { threw = true; }
+      ok('Blocked storage never throws', !threw);
+      ok('Blocked storage falls back to memory', blocked && blocked.persistent === false && blocked.get('x', 0) === 5);
+      const broken = { getItem() { throw new Error('nope'); }, setItem() { throw new Error('quota'); }, removeItem() { throw new Error('nope'); } };
+      window.__brokenStorage = broken;
+      let b2, threw2 = false;
+      try { b2 = makeStoreFor('__brokenStorage'); b2.set('y', 'v'); b2.remove('zzz'); } catch { threw2 = true; }
+      ok('Storage that fails on write (quota) is survived', !threw2 && b2.get('y', null) === 'v');
+      const mem = memoryStore(); mem.set('k', [1]);
+      eq('Memory store works alone', mem.get('k', null), [1]);
+      const circular = {}; circular.self = circular;
+      ok('Unserialisable values are refused quietly', store.session.set('__c', circular) === false);
+    }
+
+    /* ------------------------------------------------ 4. loader fallbacks */
+    group('File-list loader and fallbacks');
+    {
+      const res = (body, okFlag = true, status = 200) => ({ ok: okFlag, status, text: async () => (typeof body === 'string' ? body : JSON.stringify(body)) });
+      const good = { generated: '2026-01-01T00:00:00Z', files: [{ path: 'files/A - Lesson 1.pdf', name: 'A - Lesson 1.pdf', size: 10, date: '2026-01-01T00:00:00Z' }] };
+      const tree = { tree: [{ path: 'files/B - Lesson 2.pdf', type: 'blob', size: 20 }, { path: 'files/.gitkeep', type: 'blob', size: 0 }, { path: 'README.md', type: 'blob', size: 5 }, { path: 'files/sub', type: 'tree' }] };
+      const cfg = { indexPath: 'files-index.json', filesDir: 'files', repo: { owner: 'someone', name: 'notes', branch: 'main' } };
+      const calls = [];
+      const mk = (map) => async (url) => { calls.push(String(url)); const v = map(String(url)); if (v instanceof Error) throw v; return v; };
+
+      let s = memoryStore();
+      let r = await loadFileList({ config: cfg, store: s, fetchFn: mk((u) => (u.includes('files-index') ? res(good) : new Error('no'))) });
+      ok('1) index present -> source "index"', r.source === 'index' && r.files.length === 1 && r.files[0].name === 'A - Lesson 1.pdf');
+      ok('   …and it never calls the GitHub API', !calls.some((u) => u.includes('api.github.com')));
+      ok('   …and the good list is saved for later', s.get('lastList', null) && s.get('lastList', null).files.length === 1);
+
+      r = await loadFileList({ config: cfg, store: s, fetchFn: mk((u) => (u.includes('api.github.com') ? res(tree) : res('', false, 404))) });
+      ok('2) index missing -> GitHub API', r.source === 'api' && r.files.length === 1 && r.files[0].path === 'files/B - Lesson 2.pdf', JSON.stringify(r));
+
+      r = await loadFileList({ config: cfg, store: s, fetchFn: mk((u) => (u.includes('api.github.com') ? res(tree) : res('{ this is not json'))) });
+      ok('3) index malformed -> GitHub API', r.source === 'api');
+
+      r = await loadFileList({ config: cfg, store: s, fetchFn: mk((u) => (u.includes('api.github.com') ? res(tree) : res({ nope: true }))) });
+      ok('4) index wrong shape -> GitHub API', r.source === 'api');
+
+      r = await loadFileList({ config: cfg, store: s, fetchFn: mk(() => new Error('offline')) });
+      ok('5) everything offline -> saved list', r.source === 'cache' && r.files.length === 1, JSON.stringify(r));
+
+      r = await loadFileList({ config: cfg, store: memoryStore(), fetchFn: mk(() => new Error('offline')) });
+      ok('6) offline and nothing saved -> "none", no crash', r.source === 'none' && r.files.length === 0);
+
+      r = await loadFileList({ config: cfg, store: memoryStore(), fetchFn: mk((u) => (u.includes('api.github.com') ? res({ message: 'API rate limit exceeded' }, false, 403) : res('', false, 404))) });
+      ok('7) API rate-limited -> "none", no crash', r.source === 'none');
+
+      r = await loadFileList({ config: { ...cfg, repo: {} }, store: memoryStore(), fetchFn: mk(() => res('', false, 404)), loc: { hostname: 'localhost', pathname: '/' } });
+      ok('8) repo not configured -> API skipped quietly', r.source === 'none');
+
+      const v = validateIndex({ files: [
+        { path: 'files/ok.pdf', size: 3, date: '2026-01-01T00:00:00Z' },
+        { path: '../secret.txt' }, { path: 'https://evil.example/x.pdf' }, { path: 'javascript:alert(1)' },
+        { name: 'plain name.pdf', size: 'abc', date: 'not a date' }, 42, null, { path: 'files/ok.pdf' }, { path: 'files/.hidden' },
+      ] });
+      eq('Bad entries are dropped, good ones kept', v.files.map((f) => [f.path, f.size, f.date === null ? null : 'date']), [['files/ok.pdf', 3, 'date'], ['files/plain name.pdf', 0, null]]);
+      let threw = false; try { validateIndex('nope'); } catch { threw = true; }
+      ok('A non-list index is rejected', threw);
+      eq('Zero files is valid', validateIndex({ files: [] }).files, []);
+      eq('Repo detected on github.io', resolveRepo({ repo: {} }, { hostname: 'sulaim.github.io', pathname: '/lesson-notes/' }), { owner: 'sulaim', name: 'lesson-notes', branch: 'main' });
+      eq('Repo from config wins', resolveRepo({ repo: { owner: 'a', name: 'b', branch: 'x' } }, { hostname: 'c.github.io', pathname: '/d/' }), { owner: 'a', name: 'b', branch: 'x' });
+    }
+
+    /* ------------------------------------------------ 5. the live page */
+    group('Live page: features, Quick Guide, background');
+    const KEYS = ['guideSeen', 'guideHint', 'reading', 'theme', 'lang'];
+    const saved = Object.fromEntries(KEYS.map((k) => [k, store.local.get(k, undefined)]));
+    const restore = () => { for (const k of KEYS) { if (saved[k] === undefined) store.local.remove(k); else store.local.set(k, saved[k]); } };
+    try {
+      store.local.remove('guideSeen'); store.local.remove('guideHint'); store.local.set('reading', false);
+      const frame = document.getElementById('frame');
+      frame.src = 'index.html';
+      const app = await until(() => frame.contentWindow && frame.contentWindow.__LNH && frame.contentWindow.__LNH.ready && frame.contentWindow.__LNH, 15000);
+      ok('The page starts and draws the grid', !!app);
+      if (app) {
+        const win = frame.contentWindow, doc = win.document, html = doc.documentElement;
+        const bad = Object.entries(app.modules).filter(([, v]) => v === 'failed').map(([k]) => k);
+        ok('Every feature module started without errors', bad.length === 0, 'failed: ' + bad.join(', '));
+        for (const [name, state] of Object.entries(app.modules)) ok('   module: ' + name, state === 'ok' || state === 'off', state);
+        ok('File list loaded (index, API or saved list)', ['index', 'api', 'cache'].includes(app.list.source), String(app.list.source));
+        ok('Tiles are on the page', doc.querySelectorAll('#grid > .tile').length >= 2);
+
+        // Quick Guide: first visit, close paths, scroll always restored, reopen
+        if (app.quickGuide) {
+          const opened = await until(() => app.quickGuide.isOpen(), 4000);
+          ok('Quick Guide opens by itself on the first visit', !!opened);
+          ok('   scroll is locked while it is open', html.classList.contains('scroll-locked'));
+          ok('   it is a labelled dialog', !!doc.querySelector('.guide[role="dialog"][aria-modal="true"][aria-label]'));
+          ok('   the floating "?" stays above it', html.classList.contains('guide-open') && !!doc.getElementById('fab-help'));
+          doc.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+          ok('   Esc closes it', !app.quickGuide.isOpen());
+          ok('   scroll is restored after closing', !html.classList.contains('scroll-locked'));
+          ok('   "seen" is remembered', app.quickGuide.seen());
+          ok('   the "Need this again?" hint shows once', !!(await until(() => doc.querySelector('.toast-hint'), 2500)));
+          app.quickGuide.open();
+          ok('   it can be opened again', app.quickGuide.isOpen());
+          const root = doc.querySelector('.guide');
+          root.dispatchEvent(new win.MouseEvent('mousedown', { bubbles: true }));
+          root.dispatchEvent(new win.MouseEvent('click', { bubbles: true }));
+          ok('   tapping outside closes it', !app.quickGuide.isOpen());
+          app.quickGuide.open();
+          const okBtn = doc.querySelector('.guide-ok');
+          if (okBtn) okBtn.click();
+          ok('   "Got it" closes it', !app.quickGuide.isOpen() && !html.classList.contains('scroll-locked'));
+          for (let i = 0; i < 5; i += 1) { app.quickGuide.open(); app.quickGuide.close(); }
+          ok('   open/close many times never leaves the page locked', !html.classList.contains('scroll-locked') && !html.classList.contains('guide-open'));
+          await wait(400);
+          ok('   the hint is not shown a second time', doc.querySelectorAll('.toast-hint').length <= 1);
+        } else ok('Quick Guide is switched off in config (skipped)', true);
+
+        if (app.help) {
+          app.help.open();
+          ok('Help menu opens', app.help.isOpen() && !!doc.querySelector('.help-panel'));
+          app.help.close();
+          ok('Help menu closes and unlocks scroll', !app.help.isOpen() && !html.classList.contains('scroll-locked'));
+        }
+        ok('"?" controls exist (bar, floating, footer)', doc.querySelectorAll('[data-help]').length >= 3);
+
+        // background + fallbacks, both themes
+        if (app.bg) {
+          ok('Background started (WebGL) or fell back to the static gradient', ['webgl', 'static', 'paused'].includes(app.bg.status), String(app.bg.status));
+          const before = app.theme;
+          app.setTheme(before === 'dark' ? 'light' : 'dark', { save: false });
+          await wait(700);
+          ok('Theme switch: other palette applied', html.getAttribute('data-theme') !== before);
+          ok('   background still fine in the other theme', ['webgl', 'static', 'paused'].includes(app.bg.status));
+          app.setTheme(before, { save: false });
+          await wait(700);
+          if (app.reading) {
+            app.reading.set(true, false);
+            ok('Reading mode -> static gradient (dark and light)', html.classList.contains('bg-static') && app.bg.status !== 'webgl');
+            app.reading.set(false, false);
+            await wait(100);
+            ok('Reading mode off -> background returns (or stays static if WebGL is missing)', app.bg.status === 'webgl' ? !html.classList.contains('bg-static') : html.classList.contains('bg-static'));
+          }
+          ok('The canvas lets clicks through', win.getComputedStyle(doc.getElementById('bg-canvas')).pointerEvents === 'none');
+        } else ok('Living background is switched off in config -> static gradient', html.classList.contains('bg-static'));
+
+        // language
+        const langBefore = app.lang;
+        app.setLang(langBefore === 'ar' ? 'en' : 'ar', { save: false });
+        await wait(700);
+        ok('Language switch flips direction', html.dir === (langBefore === 'ar' ? 'ltr' : 'rtl'));
+        app.setLang(langBefore, { save: false });
+        await wait(700);
+        ok('No dialog left open at the end', !doc.querySelector('.overlay:not(.closing)') && !html.classList.contains('scroll-locked'));
+      }
+    } catch (err) {
+      report(false, 'Live page tests crashed', String(err && err.message));
+    } finally {
+      restore();
+    }
+
+    const summary = document.getElementById('summary');
+    summary.textContent = failed === 0 ? 'All ' + passed + ' tests passed.' : failed + ' failed, ' + passed + ' passed.';
+    summary.style.color = failed === 0 ? '#2ED573' : '#FF4D4F';
+    document.title = (failed === 0 ? 'PASS' : 'FAIL') + ' · Self-test';
+    window.__TESTS = { passed, failed, done: true };
+  </script>
+</body>
+</html>

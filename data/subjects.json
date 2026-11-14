@@ -1,0 +1,6 @@
+{
+  "_note": "SAMPLE FILE. Optional. For each subject (exactly as written in the file names) you may set: ar / en display names, icon (an icon name, see README) and tint (a or b). Delete the sample entries and add your own. Keys starting with _ are ignored.",
+
+  "Sample": { "ar": "عيّنة (Sample)", "en": "Sample", "icon": "book", "tint": "a" },
+  "عينة": { "ar": "عيّنة", "en": "Sample (عينة)", "icon": "book-open", "tint": "b" }
+}

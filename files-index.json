@@ -1,0 +1,20 @@
+{
+  "generated": "2026-11-14T19:49:42.909Z",
+  "count": 2,
+  "files": [
+    {
+      "path": "files/Sample - Lesson 1 (delete me) [Summary].pdf",
+      "name": "Sample - Lesson 1 (delete me) [Summary].pdf",
+      "size": 735,
+      "type": "pdf",
+      "date": "2026-11-14T19:14:10.383Z"
+    },
+    {
+      "path": "files/عينة - الدرس 1 (ملف تجريبي احذفه).pdf",
+      "name": "عينة - الدرس 1 (ملف تجريبي احذفه).pdf",
+      "size": 767,
+      "type": "pdf",
+      "date": "2026-11-14T19:14:10.384Z"
+    }
+  ]
+}

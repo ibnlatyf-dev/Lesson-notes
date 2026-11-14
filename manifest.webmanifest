@@ -1,0 +1,19 @@
+{
+  "name": "مركز دروسي · Lesson Notes Hub",
+  "short_name": "مركز دروسي",
+  "description": "ملخصات ومذكرات الدروس في مكان واحد. All our class notes in one place.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "dir": "auto",
+  "lang": "ar",
+  "background_color": "#0B132B",
+  "theme_color": "#0B132B",
+  "categories": ["education"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

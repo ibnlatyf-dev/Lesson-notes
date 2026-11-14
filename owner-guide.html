@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <title>Owner guide · Lesson Notes Hub</title>
+  <meta name="theme-color" content="#0B132B">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+  <link rel="stylesheet" href="style.css">
+  <script src="boot.js"></script>
+  <script type="module" src="owner-guide.js"></script>
+</head>
+<body>
+  <div id="bg-fallback" aria-hidden="true"></div>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+  <div id="bg-dots" aria-hidden="true"></div>
+
+  <header class="nav-wrap">
+    <nav class="island glass" data-i18n-attr="aria-label:nav.label" aria-label="Site controls">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true">م</span>
+        <span class="brand-name" data-i18n="site.title">Lesson Notes Hub</span>
+      </a>
+      <div class="nav-actions">
+        <button type="button" id="btn-lang" class="icon-btn pill-btn" data-icon="translate" data-i18n-attr="aria-label:nav.lang;title:nav.lang" aria-label="Switch language"><span class="lang-label">ع</span></button>
+        <button type="button" id="btn-theme" class="icon-btn" aria-label="Theme"><span class="ic-slot"></span></button>
+        <a class="btn btn-primary btn-small" href="./" data-icon="arrow-left"><span data-i18n="og.back">Back to the site</span></a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main" class="page">
+    <section class="page-head glass">
+      <h1 class="page-title" data-i18n="og.title" data-page-title="og.title">Owner guide</h1>
+      <p class="page-sub" data-i18n="og.sub">For Sulaim. Classmates do not need this page.</p>
+    </section>
+
+    <div class="og-grid">
+      <section class="og-card glass og-wide" id="upload">
+        <h2><span class="tile-icon" data-icon="upload-simple"></span><span data-i18n="og.upload.title">Upload a file from your phone</span></h2>
+        <ul class="og-steps">
+          <li data-i18n="og.upload.1"></li>
+          <li data-i18n="og.upload.2"></li>
+          <li data-i18n="og.upload.3"></li>
+          <li data-i18n="og.upload.4"></li>
+        </ul>
+      </section>
+
+      <section class="og-card glass" id="naming">
+        <h2><span class="tile-icon" data-icon="tag"></span><span data-i18n="og.naming.title">How to name files</span></h2>
+        <p data-i18n="naming.intro"></p>
+        <code class="code-line" dir="ltr">Subject - Lesson title [Tag].ext</code>
+        <code class="code-line" dir="ltr">Tawheed - Lesson 3 [Summary].pdf</code>
+        <code class="code-line" dir="rtl"><bdi>الفقه - الدرس 5 [ملخص] [طباعة].pdf</bdi></code>
+        <ul class="help-list">
+          <li data-i18n="naming.rule.subject"></li>
+          <li data-i18n="naming.rule.other"></li>
+          <li data-i18n="naming.rule.lesson"></li>
+          <li data-i18n="naming.rule.tags"></li>
+          <li data-i18n="naming.rule.unknown"></li>
+        </ul>
+      </section>
+
+      <section class="og-card glass" id="tags">
+        <h2><span class="tile-icon" data-icon="files"></span><span data-i18n="og.tags.title">What the tags do</span></h2>
+        <ul class="tag-help">
+          <li><code dir="ltr" data-i18n="naming.tag.full"></code><span data-i18n="naming.tagDesc.full"></span></li>
+          <li><code dir="ltr" data-i18n="naming.tag.summary"></code><span data-i18n="naming.tagDesc.summary"></span></li>
+          <li><code dir="ltr" data-i18n="naming.tag.print"></code><span data-i18n="naming.tagDesc.print"></span></li>
+          <li><code dir="ltr" data-i18n="naming.tag.updated"></code><span data-i18n="naming.tagDesc.updated"></span></li>
+          <li><code dir="ltr" data-i18n="naming.tag.exam"></code><span data-i18n="naming.tagDesc.exam"></span></li>
+        </ul>
+      </section>
+
+      <section class="og-card glass" id="appear">
+        <h2><span class="tile-icon" data-icon="hourglass-medium"></span><span data-i18n="og.appear.title">When new files appear</span></h2>
+        <p data-i18n="og.appear.text"></p>
+      </section>
+
+      <section class="og-card glass" id="delete">
+        <h2><span class="tile-icon" data-icon="trash"></span><span data-i18n="og.delete.title">Delete or replace a file</span></h2>
+        <ul class="og-steps">
+          <li data-i18n="og.delete.1"></li>
+          <li data-i18n="og.delete.2"></li>
+          <li data-i18n="og.delete.3"></li>
+        </ul>
+      </section>
+
+      <section class="og-card glass" id="config">
+        <h2><span class="tile-icon" data-icon="gear-six"></span><span data-i18n="og.config.title">Where the settings are</span></h2>
+        <p data-i18n="og.config.text"></p>
+      </section>
+
+      <section class="og-card glass" id="data">
+        <h2><span class="tile-icon" data-icon="book-open"></span><span data-i18n="og.data.title">Descriptions, glossary, subject icons</span></h2>
+        <p data-i18n="og.data.text"></p>
+      </section>
+
+      <section class="og-card glass og-wide" id="limits">
+        <h2><span class="tile-icon" data-icon="info"></span><span data-i18n="og.limits.title">Upload size limits</span></h2>
+        <ul class="og-steps">
+          <li data-i18n="og.limits.1"></li>
+          <li data-i18n="og.limits.2"></li>
+          <li data-i18n="og.limits.3"></li>
+        </ul>
+      </section>
+    </div>
+
+    <p class="help-foot" style="margin-top:20px">
+      <a class="btn btn-primary" href="./" data-icon="house"><span data-i18n="og.back">Back to the site</span></a>
+    </p>
+
+    <noscript>
+      <div class="noscript glass">
+        <p><strong>File names:</strong> <code>Subject - Lesson title [Tag].ext</code>, for example <code>Tawheed - Lesson 3 [Summary].pdf</code>. Tags: [Full] [Summary] [Print] [Updated] [Exam] (or [كامل] [ملخص] [طباعة] [محدث] [اختبار]).</p>
+        <p><strong>أسماء الملفات:</strong> «المادة - عنوان الدرس [وسم].ext» مثل «الفقه - الدرس 5 [ملخص].pdf».</p>
+      </div>
+    </noscript>
+    <div id="fatal" class="noscript glass" hidden>
+      <p><strong>File names:</strong> Subject - Lesson title [Tag].ext — e.g. “Tawheed - Lesson 3 [Summary].pdf”. Tags: [Full] [Summary] [Print] [Updated] [Exam].</p>
+      <p><strong>أسماء الملفات:</strong> «المادة - عنوان الدرس [وسم].ext» مثل «الفقه - الدرس 5 [ملخص].pdf». الوسوم: [كامل] [ملخص] [طباعة] [محدث] [اختبار].</p>
+    </div>
+  </main>
+
+  <footer class="footer glass">
+    <p class="privacy"><span class="privacy-ic" data-icon="shield-check"></span><span data-i18n="footer.privacy">No tracking, no ads, no accounts, nothing collected by this site.</span></p>
+  </footer>
+</body>
+</html>
